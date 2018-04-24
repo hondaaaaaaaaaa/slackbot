@@ -69,8 +69,14 @@ if (!process.env.token) {
     process.exit(1);
 }
 
+if (!process.env.apikey) {
+    console.log('Error: Specify token in environment');
+    process.exit(1);
+}
+
 var Botkit = require('../lib/Botkit.js');
 var os = require('os');
+var request = require('request');
 
 var controller = Botkit.slackbot({
     json_file_store: 'storage_bot_db'
@@ -295,3 +301,92 @@ controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,dir
         }
     });
 });
+
+controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', function(bot, message) {
+  var thing = message.match[1];
+    controller.storage.users.get(message.user, function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+        if (!user.purchase || (user.purchase.length == 0)) {
+            bot.reply(message, '購入物リストに何も入っていません');
+        }else{
+          var list = [];
+          list = user.purchase;
+
+
+
+          bot.reply(message, '購入物リストには以下のものがあります');
+          var str = list.join('\n');
+          bot.reply(message, str);
+        }
+    });
+});
+
+var context = '';
+var mode = 'dialog';
+var place = '京都';
+
+controller.hears('', 'direct_message,direct_mention,mention', function(bot, message) {
+
+  //  bot.startConversation(message, function(err, convo) {
+        var options = {
+            url: 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue?APIKEY=' + process.env.apikey,
+            json: {
+                utt: message.text,
+                place: place,
+
+                // 以下2行はしりとり以外の会話はコメントアウトいいかも
+                // 会話を継続しているかの情報
+                context: context,
+                mode: mode
+            }
+        }
+
+        //リクエスト送信
+        request.post(options, function (error, response, body) {
+            context = body.context;
+            mode = body.mode;
+
+            bot.reply(message, body.utt);
+        })
+        //convo.next();
+    //  });
+});
+
+// controller.hears('しりとり(.*)', 'direct_message,direct_mention,mention', function(bot, message) {
+//
+//   var options = {
+//       url: 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue?APIKEY=' + process.env.apikey,
+//       json: {
+//           utt: message.text,
+//           place: place,
+//
+//           // 以下2行はしりとり以外の会話はコメントアウトいいかも
+//           // 会話を継続しているかの情報
+//           context: context,
+//           mode: mode
+//       }
+//   }
+//   request.post(options, function (error, response, body) {
+//       context = body.context;
+//       mode = body.mode;
+//       bot.reply(message, body.utt);
+//   })
+//
+//    bot.startConversation(message, function(err, convo) {
+//         convo.ask('答えをどうぞ',
+//         function(response,convo){
+//             //リクエスト送信
+//             request.post(options, function (error, response, body) {
+//                 context = body.context;
+//                 //mode = 'srtr';
+//                 convo.say(body.utt);
+//                 convo.next();
+//                   //bot.reply(message, body.utt);
+//             });
+//           });
+//       });
+// });
