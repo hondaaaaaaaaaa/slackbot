@@ -243,3 +243,38 @@ function formatUptime(uptime) {
     uptime = uptime + ' ' + unit;
     return uptime;
 }
+
+controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が切れた', '(.*)を買う'], 'direct_message,direct_mention,mention', function(bot, message) {
+    var thing = message.match[1];
+    controller.storage.users.get(message.user, function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+
+        if (!user.purchase) {
+            var newlist = [];
+            newlist.push(thing);
+            console.log(newlist);
+            user.purchase = newlist;
+            console.log(newlist);
+            controller.storage.users.save(user, function(err, id) {
+                bot.reply(message, thing + ' を購入物リストに追加しました');
+            });
+        }else{
+          oldlist = user.purchase;
+          console.log(oldlist);
+          if(oldlist.indexOf(thing) < 0){
+            oldlist.push(thing);
+            console.log(oldlist);
+            user.purchase = oldlist;
+            controller.storage.users.save(user, function(err, id) {
+                bot.reply(message, thing + ' を購入物リストに追加しました');
+            });
+          }else{
+            bot.reply(message, thing + ' はすでに購入物リストに入っています');
+          }
+        }
+    });
+});
