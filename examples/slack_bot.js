@@ -256,7 +256,6 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
         if (!user.purchase) {
             var newlist = [];
             newlist.push(thing);
-            console.log(newlist);
             user.purchase = newlist;
             console.log(newlist);
             controller.storage.users.save(user, function(err, id) {
@@ -264,7 +263,6 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
             });
         }else{
           oldlist = user.purchase;
-          console.log(oldlist);
           if(oldlist.indexOf(thing) < 0){
             oldlist.push(thing);
             console.log(oldlist);
@@ -275,6 +273,25 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
           }else{
             bot.reply(message, thing + ' はすでに購入物リストに入っています');
           }
+        }
+    });
+});
+
+controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,direct_mention,mention', function(bot, message) {
+    controller.storage.users.get(message.user, function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+        if (!user.purchase || (user.purchase.length == 0)) {
+            bot.reply(message, '購入物リストに何も入っていません');
+        }else{
+          var list = [];
+          list = user.purchase;
+          bot.reply(message, '購入物リストには以下のものがあります');
+          var str = list.join('\n');
+          bot.reply(message, str);
         }
     });
 });
