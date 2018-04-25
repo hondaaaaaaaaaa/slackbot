@@ -295,9 +295,28 @@ controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,dir
         }else{
           var list = [];
           list = user.purchase;
-          bot.reply(message, '購入物リストには以下のものがあります');
           var str = list.join('\n');
-          bot.reply(message, str);
+          bot.reply(message, '購入物リストには以下のものがあります\n' + str);
+        }
+    });
+});
+
+controller.hears(['全部買った'], 'direct_message,direct_mention,mention', function(bot, message) {
+    controller.storage.users.get(message.user, function(err, user) {
+        if (!user) {
+            user = {
+                id: message.user,
+            };
+        }
+        if (!user.purchase || (user.purchase.length == 0)) {
+            bot.reply(message, '購入物リストに何も入っていません');
+        }else{
+          var list = [];
+          list = user.purchase;
+          list.splice(0, list.length);
+          controller.storage.users.save(user, function(err, id) {
+              bot.reply(message, '購入物リストを空にしました');
+          });
         }
     });
 });
@@ -315,12 +334,18 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
         }else{
           var list = [];
           list = user.purchase;
-
-
-
-          bot.reply(message, '購入物リストには以下のものがあります');
           var str = list.join('\n');
-          bot.reply(message, str);
+          var p;
+          if(p = list.indexOf(thing) >= 0){
+            list.splice(p - 1, 1);
+            console.log(list);
+            user.purchase = list;
+            controller.storage.users.save(user, function(err, id) {
+                bot.reply(message, thing + ' を購入物リストから削除しました');
+            });
+          }else{
+            bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
+          }
         }
     });
 });
