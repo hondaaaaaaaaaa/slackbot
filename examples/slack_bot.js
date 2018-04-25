@@ -336,8 +336,9 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
           list = user.purchase;
           var str = list.join('\n');
           var p;
-          if(p = list.indexOf(thing) >= 0){
-            list.splice(p - 1, 1);
+          if((p = list.indexOf(thing)) >= 0){
+            console.log(p);
+            list.splice(p, 1);
             console.log(list);
             user.purchase = list;
             controller.storage.users.save(user, function(err, id) {
