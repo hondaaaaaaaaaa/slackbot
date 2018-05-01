@@ -78,6 +78,48 @@ var Botkit = require('../lib/Botkit.js');
 var os = require('os');
 var request = require('request');
 
+/////////////////////////////////////////Arduinoのやーつ
+var five = require("johnny-five");
+
+var board = new five.Board();
+
+var button;
+var is_open = false;
+
+board.on("ready", function() {
+    // スイッチの設定
+    button = new five.Button({
+        // デジタル2番ピンにスイッチを接続
+        pin: 5,
+        // Arduinoに内蔵されているプルアップ回路を有効
+        isPullup: false
+    });
+
+    // スイッチを追加(アクセス許可)
+    board.repl.inject({
+        button: button
+    });
+
+    // スイッチを押した
+    button.on("down", function() {
+        console.log("HIGH");
+    });
+
+    // スイッチを押し続けて一定時間(初期設定では500ms)経過した
+    button.on("hold", function() {
+        console.log("HOLD");
+        is_open = false;
+    });
+
+    // スイッチを離した
+    button.on("up", function() {
+        console.log("LOW");
+        is_open = true;
+    });
+});
+
+////////////////////////////////////////////
+
 var controller = Botkit.slackbot({
     json_file_store: 'storage_bot_db'
 });
@@ -133,8 +175,7 @@ controller.hears(['what is my name', 'who am i'], 'direct_message,direct_mention
                 if (!err) {
                     convo.say('I do not know your name yet!');
                     convo.ask('What should I call you?', function(response, convo) {
-                        convo.ask('You want me to call you `' + response.text + '`?', [
-                            {
+                        convo.ask('You want me to call you `' + response.text + '`?', [{
                                 pattern: 'yes',
                                 callback: function(response, convo) {
                                     // since no further messages are queued after this,
@@ -160,7 +201,9 @@ controller.hears(['what is my name', 'who am i'], 'direct_message,direct_mention
 
                         convo.next();
 
-                    }, {'key': 'nickname'}); // store the results in a field called nickname
+                    }, {
+                        'key': 'nickname'
+                    }); // store the results in a field called nickname
 
                     convo.on('end', function(convo) {
                         if (convo.status == 'completed') {
@@ -196,8 +239,7 @@ controller.hears(['shutdown'], 'direct_message,direct_mention,mention', function
 
     bot.startConversation(message, function(err, convo) {
 
-        convo.ask('Are you sure you want me to shutdown?', [
-            {
+        convo.ask('Are you sure you want me to shutdown?', [{
                 pattern: bot.utterances.yes,
                 callback: function(response, convo) {
                     convo.say('Bye!');
@@ -207,28 +249,29 @@ controller.hears(['shutdown'], 'direct_message,direct_mention,mention', function
                     }, 3000);
                 }
             },
-        {
-            pattern: bot.utterances.no,
-            default: true,
-            callback: function(response, convo) {
-                convo.say('*Phew!*');
-                convo.next();
+            {
+                pattern: bot.utterances.no,
+                default: true,
+                callback: function(response, convo) {
+                    convo.say('*Phew!*');
+                    convo.next();
+                }
             }
-        }
         ]);
     });
 });
 
 
 controller.hears(['uptime', 'identify yourself', 'who are you', 'what is your name'],
-    'direct_message,direct_mention,mention', function(bot, message) {
+    'direct_message,direct_mention,mention',
+    function(bot, message) {
 
         var hostname = os.hostname();
         var uptime = formatUptime(process.uptime());
 
         bot.reply(message,
             ':robot_face: I am a bot named <@' + bot.identity.name +
-             '>. I have been running for ' + uptime + ' on ' + hostname + '.');
+            '>. I have been running for ' + uptime + ' on ' + hostname + '.');
 
     });
 
@@ -267,18 +310,18 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
             controller.storage.users.save(user, function(err, id) {
                 bot.reply(message, thing + ' を購入物リストに追加しました');
             });
-        }else{
-          oldlist = user.purchase;
-          if(oldlist.indexOf(thing) < 0){
-            oldlist.push(thing);
-            console.log(oldlist);
-            user.purchase = oldlist;
-            controller.storage.users.save(user, function(err, id) {
-                bot.reply(message, thing + ' を購入物リストに追加しました');
-            });
-          }else{
-            bot.reply(message, thing + ' はすでに購入物リストに入っています');
-          }
+        } else {
+            oldlist = user.purchase;
+            if (oldlist.indexOf(thing) < 0) {
+                oldlist.push(thing);
+                console.log(oldlist);
+                user.purchase = oldlist;
+                controller.storage.users.save(user, function(err, id) {
+                    bot.reply(message, thing + ' を購入物リストに追加しました');
+                });
+            } else {
+                bot.reply(message, thing + ' はすでに購入物リストに入っています');
+            }
         }
     });
 });
@@ -292,11 +335,11 @@ controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,dir
         }
         if (!user.purchase || (user.purchase.length == 0)) {
             bot.reply(message, '購入物リストに何も入っていません');
-        }else{
-          var list = [];
-          list = user.purchase;
-          var str = list.join('\n');
-          bot.reply(message, '購入物リストには以下のものがあります\n' + str);
+        } else {
+            var list = [];
+            list = user.purchase;
+            var str = list.join('\n');
+            bot.reply(message, '購入物リストには以下のものがあります\n' + str);
         }
     });
 });
@@ -310,19 +353,19 @@ controller.hears(['全部買った'], 'direct_message,direct_mention,mention', f
         }
         if (!user.purchase || (user.purchase.length == 0)) {
             bot.reply(message, '購入物リストに何も入っていません');
-        }else{
-          var list = [];
-          list = user.purchase;
-          list.splice(0, list.length);
-          controller.storage.users.save(user, function(err, id) {
-              bot.reply(message, '購入物リストを空にしました');
-          });
+        } else {
+            var list = [];
+            list = user.purchase;
+            list.splice(0, list.length);
+            controller.storage.users.save(user, function(err, id) {
+                bot.reply(message, '購入物リストを空にしました');
+            });
         }
     });
 });
 
 controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', function(bot, message) {
-  var thing = message.match[1];
+    var thing = message.match[1];
     controller.storage.users.get(message.user, function(err, user) {
         if (!user) {
             user = {
@@ -331,24 +374,33 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
         }
         if (!user.purchase || (user.purchase.length == 0)) {
             bot.reply(message, '購入物リストに何も入っていません');
-        }else{
-          var list = [];
-          list = user.purchase;
-          var str = list.join('\n');
-          var p;
-          if((p = list.indexOf(thing)) >= 0){
-            console.log(p);
-            list.splice(p, 1);
-            console.log(list);
-            user.purchase = list;
-            controller.storage.users.save(user, function(err, id) {
-                bot.reply(message, thing + ' を購入物リストから削除しました');
-            });
-          }else{
-            bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
-          }
+        } else {
+            var list = [];
+            list = user.purchase;
+            var str = list.join('\n');
+            var p;
+            if ((p = list.indexOf(thing)) >= 0) {
+                console.log(p);
+                list.splice(p, 1);
+                console.log(list);
+                user.purchase = list;
+                controller.storage.users.save(user, function(err, id) {
+                    bot.reply(message, thing + ' を購入物リストから削除しました');
+                });
+            } else {
+                bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
+            }
         }
     });
+});
+
+controller.hears(['(.*)鍵(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+    if (is_open) {
+        bot.reply(message, "あいてるよ！！誰がいるのかな(ﾜｸﾜｸ");
+    } else {
+        bot.reply(message, "しまってるよ( ;∀;)");
+    }
+
 });
 
 var context = '';
@@ -357,28 +409,28 @@ var place = '京都';
 
 controller.hears('', 'direct_message,direct_mention,mention', function(bot, message) {
 
-  //  bot.startConversation(message, function(err, convo) {
-        var options = {
-            url: 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue?APIKEY=' + process.env.apikey,
-            json: {
-                utt: message.text,
-                place: place,
+    //  bot.startConversation(message, function(err, convo) {
+    var options = {
+        url: 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue?APIKEY=' + process.env.apikey,
+        json: {
+            utt: message.text,
+            place: place,
 
-                // 以下2行はしりとり以外の会話はコメントアウトいいかも
-                // 会話を継続しているかの情報
-                context: context,
-                mode: mode
-            }
+            // 以下2行はしりとり以外の会話はコメントアウトいいかも
+            // 会話を継続しているかの情報
+            context: context,
+            mode: mode
         }
+    }
 
-        //リクエスト送信
-        request.post(options, function (error, response, body) {
-            context = body.context;
-            mode = body.mode;
+    //リクエスト送信
+    request.post(options, function(error, response, body) {
+        context = body.context;
+        mode = body.mode;
 
-            bot.reply(message, body.utt);
-        })
-        //convo.next();
+        bot.reply(message, body.utt);
+    })
+    //convo.next();
     //  });
 });
 
