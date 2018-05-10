@@ -79,44 +79,44 @@ var os = require('os');
 var request = require('request');
 
 /////////////////////////////////////////Arduinoのやーつ
-var five = require("johnny-five");
-
-var board = new five.Board();
-
-var button;
-var is_open = false;
-
-board.on("ready", function() {
-    // スイッチの設定
-    button = new five.Button({
-        // デジタル2番ピンにスイッチを接続
-        pin: 5,
-        // Arduinoに内蔵されているプルアップ回路を有効
-        isPullup: false
-    });
-
-    // スイッチを追加(アクセス許可)
-    board.repl.inject({
-        button: button
-    });
-
-    // スイッチを押した
-    button.on("down", function() {
-        console.log("HIGH");
-    });
-
-    // スイッチを押し続けて一定時間(初期設定では500ms)経過した
-    button.on("hold", function() {
-        console.log("HOLD");
-        is_open = false;
-    });
-
-    // スイッチを離した
-    button.on("up", function() {
-        console.log("LOW");
-        is_open = true;
-    });
-});
+// var five = require("johnny-five");
+//
+// var board = new five.Board();
+//
+// var button;
+// var is_open = false;
+//
+// board.on("ready", function() {
+//     // スイッチの設定
+//     button = new five.Button({
+//         // デジタル2番ピンにスイッチを接続
+//         pin: 5,
+//         // Arduinoに内蔵されているプルアップ回路を有効
+//         isPullup: false
+//     });
+//
+//     // スイッチを追加(アクセス許可)
+//     board.repl.inject({
+//         button: button
+//     });
+//
+//     // スイッチを押した
+//     button.on("down", function() {
+//         console.log("HIGH");
+//     });
+//
+//     // スイッチを押し続けて一定時間(初期設定では500ms)経過した
+//     button.on("hold", function() {
+//         console.log("HOLD");
+//         is_open = false;
+//     });
+//
+//     // スイッチを離した
+//     button.on("up", function() {
+//         console.log("LOW");
+//         is_open = true;
+//     });
+// });
 
 ////////////////////////////////////////////
 
@@ -295,10 +295,10 @@ function formatUptime(uptime) {
 
 controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が切れた', '(.*)を買う'], 'direct_message,direct_mention,mention', function(bot, message) {
     var thing = message.match[1];
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.teams.get(message.team, function(err, user) {
         if (!user) {
             user = {
-                id: message.user,
+                id: message.team,
             };
         }
 
@@ -307,7 +307,7 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
             newlist.push(thing);
             user.purchase = newlist;
             console.log(newlist);
-            controller.storage.users.save(user, function(err, id) {
+            controller.storage.teams.save(user, function(err, id) {
                 bot.reply(message, thing + ' を購入物リストに追加しました');
             });
         } else {
@@ -316,7 +316,7 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
                 oldlist.push(thing);
                 console.log(oldlist);
                 user.purchase = oldlist;
-                controller.storage.users.save(user, function(err, id) {
+                controller.storage.teams.save(user, function(err, id) {
                     bot.reply(message, thing + ' を購入物リストに追加しました');
                 });
             } else {
@@ -327,10 +327,10 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
 });
 
 controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,direct_mention,mention', function(bot, message) {
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.teams.get(message.team, function(err, user) {
         if (!user) {
             user = {
-                id: message.user,
+                id: message.team,
             };
         }
         if (!user.purchase || (user.purchase.length == 0)) {
@@ -345,10 +345,10 @@ controller.hears(['買うもの', '購入物', 'リスト'], 'direct_message,dir
 });
 
 controller.hears(['全部買った'], 'direct_message,direct_mention,mention', function(bot, message) {
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.teams.get(message.team, function(err, user) {
         if (!user) {
             user = {
-                id: message.user,
+                id: message.team,
             };
         }
         if (!user.purchase || (user.purchase.length == 0)) {
@@ -357,7 +357,7 @@ controller.hears(['全部買った'], 'direct_message,direct_mention,mention', f
             var list = [];
             list = user.purchase;
             list.splice(0, list.length);
-            controller.storage.users.save(user, function(err, id) {
+            controller.storage.teams.save(user, function(err, id) {
                 bot.reply(message, '購入物リストを空にしました');
             });
         }
@@ -366,10 +366,10 @@ controller.hears(['全部買った'], 'direct_message,direct_mention,mention', f
 
 controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', function(bot, message) {
     var thing = message.match[1];
-    controller.storage.users.get(message.user, function(err, user) {
+    controller.storage.teams.get(message.team, function(err, user) {
         if (!user) {
             user = {
-                id: message.user,
+                id: message.team,
             };
         }
         if (!user.purchase || (user.purchase.length == 0)) {
@@ -384,7 +384,7 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
                 list.splice(p, 1);
                 console.log(list);
                 user.purchase = list;
-                controller.storage.users.save(user, function(err, id) {
+                controller.storage.teams.save(user, function(err, id) {
                     bot.reply(message, thing + ' を購入物リストから削除しました');
                 });
             } else {
@@ -394,7 +394,6 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
     });
 });
 
-<<<<<<< HEAD
 //試作(欲しいものリスト)
  //controller.hears(['(.*)が欲しい', '(.*)がほしい'], 'direct_message,direct_mention,mention', function(bot, message) {
 //  var thing = message.match[1];
@@ -508,8 +507,6 @@ if (res.statusCode == 200){
 //試作
 
 
-
-=======
 controller.hears(['(.*)鍵(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     if (is_open) {
         bot.reply(message, "あいてるよ！！誰がいるのかな(ﾜｸﾜｸ");
@@ -518,7 +515,6 @@ controller.hears(['(.*)鍵(.*)'], 'direct_message,direct_mention,mention', funct
     }
 
 });
->>>>>>> 買い物メモ
 
 var context = '';
 var mode = 'dialog';
