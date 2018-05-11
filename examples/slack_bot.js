@@ -302,6 +302,10 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
             };
         }
 
+        if(thing==null||thing==''){
+          bot.reply(message,'買うものが入力されていません');
+        }
+        else{
         if (!user.purchase) {
             var newlist = [];
             newlist.push(thing);
@@ -323,6 +327,7 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
                 bot.reply(message, thing + ' はすでに購入物リストに入っています');
             }
         }
+      }
     });
 });
 
@@ -372,6 +377,11 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
                 id: message.team,
             };
         }
+
+        if(thing==null||thing==''){
+          bot.reply(message,'買ったものが入力されていません');
+        }
+        else{
         if (!user.purchase || (user.purchase.length == 0)) {
             bot.reply(message, '購入物リストに何も入っていません');
         } else {
@@ -391,86 +401,21 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
                 bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
             }
         }
+      }
     });
 });
 
-//試作(欲しいものリスト)
- //controller.hears(['(.*)が欲しい', '(.*)がほしい'], 'direct_message,direct_mention,mention', function(bot, message) {
-//  var thing = message.match[1];
-//      controller.storage.users.get(message.user, function(err, user) {
-//          if (!user) {
-//              user = {
-//                  id: message.user,
-//              };
-//          }
-//
-//          if (!user.purchase) {
-//            var admitlist = [];
-//            admitlist.push(thing);
-//             user.purchase = admitlist;
-//             console.log(admitlist);
-//             controller.storage.users.save(user, function(err, id) {
-//                 bot.reply(message, thing + ' を購入候補リストに追加しました');
-//             });
-//           }else{
-//             oldlist = user.purchase;
-//             if(oldlist.indexOf(thing) < 0){
-//               oldlist.push(thing);
-//               console.log(oldlist);
-//               user.purchase = oldlist;
-//               controller.storage.users.save(user, function(err, id) {
-//                   bot.reply(message, thing + ' を購入候補リストに追加しました');
-//               });
-//             }else{
-//               bot.reply(message, thing + ' はすでに購入候補リストに入っています');
-//             }
-//           }
-//          }
-//   });
-//  });
 
-
-//(先生からのOK待ち)
-//(注文や購入)
-//controller.hears(['(.*)を注文する', '(.*)を頼む'], 'direct_message,direct_mention,mention', function(bot, message) {
-//  var thing = message.match[1];
-//      controller.storage.users.get(message.user, function(err, user) {
-//          if (!user) {
-//              user = {
-//                  id: message.user,
-//              };
-//          }
-//
-//          if (!user.purchase) {
-//            var purchaselist = [];
-//            admitlist.push(thing);
-//             user.purchase = purchaselist;
-//             console.log(purchaselist);
-//             controller.storage.users.save(user, function(err, id) {
-//                 bot.reply(message, thing + ' を注文リストに追加しました');
-//             });
-//           }else{
-//             oldlist = user.purchase;
-//             if(oldlist.indexOf(thing) < 0){
-//               oldlist.push(thing);
-//               console.log(oldlist);
-//               user.purchase = oldlist;
-//               controller.storage.users.save(user, function(err, id) {
-//                   bot.reply(message, thing + ' を注文リストに追加しました');
-//               });
-//             }else{
-//               bot.reply(message, thing + ' はすでに注文リストに入っています');
-//             }
-//           }
-//          }
-//   });
-//  });
 
 //(論文検索)
 controller.hears(['(.*)の論文(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
   var thing = message.match[1];
+  if(thing==null||thing==''){
+          bot.reply(message,'調べる論文のジャンルが入力されていません');
+        }
+  else{
   var request = require('sync-request');
-var DOMParser = require('xmldom').DOMParser;
+  var DOMParser = require('xmldom').DOMParser;
 
   size=3;
   //query(thing) = 'Deep%20Learning'  //Deep%20Learningを変えると検索するもの(thing)も変わる
@@ -502,7 +447,7 @@ if (res.statusCode == 200){
         //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
     }
 }
-
+}
 });
 //試作
 
