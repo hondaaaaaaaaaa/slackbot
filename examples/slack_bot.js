@@ -316,32 +316,31 @@ controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が�
             };
         }
 
-        if(thing==null||thing==''){
-          bot.reply(message,'買うものが入力されていません');
-        }
-        else{
-        if (!user.purchase) {
-            var newlist = [];
-            newlist.push(thing);
-            user.purchase = newlist;
-            console.log(newlist);
-            controller.storage.teams.save(user, function(err, id) {
-                bot.reply(message, thing + ' を購入物リストに追加しました');
-            });
+        if (thing == null || thing == '') {
+            bot.reply(message, '買うものが入力されていません');
         } else {
-            oldlist = user.purchase;
-            if (oldlist.indexOf(thing) < 0) {
-                oldlist.push(thing);
-                console.log(oldlist);
-                user.purchase = oldlist;
+            if (!user.purchase) {
+                var newlist = [];
+                newlist.push(thing);
+                user.purchase = newlist;
+                console.log(newlist);
                 controller.storage.teams.save(user, function(err, id) {
                     bot.reply(message, thing + ' を購入物リストに追加しました');
                 });
             } else {
-                bot.reply(message, thing + ' はすでに購入物リストに入っています');
+                oldlist = user.purchase;
+                if (oldlist.indexOf(thing) < 0) {
+                    oldlist.push(thing);
+                    console.log(oldlist);
+                    user.purchase = oldlist;
+                    controller.storage.teams.save(user, function(err, id) {
+                        bot.reply(message, thing + ' を購入物リストに追加しました');
+                    });
+                } else {
+                    bot.reply(message, thing + ' はすでに購入物リストに入っています');
+                }
             }
         }
-      }
     });
 });
 
@@ -392,34 +391,32 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
             };
         }
 
-        if(thing==null||thing==''){
-          bot.reply(message,'買ったものが入力されていません');
-        }
-        else{
-        if (!user.purchase || (user.purchase.length == 0)) {
-            bot.reply(message, '購入物リストに何も入っていません');
+        if (thing == null || thing == '') {
+            bot.reply(message, '買ったものが入力されていません');
         } else {
-            var list = [];
-            list = user.purchase;
-            var str = list.join('\n');
-            var p;
-            if ((p = list.indexOf(thing)) >= 0) {
-                console.log(p);
-                list.splice(p, 1);
-                console.log(list);
-                user.purchase = list;
-                controller.storage.teams.save(user, function(err, id) {
-                    bot.reply(message, thing + ' を購入物リストから削除しました');
-                });
+            if (!user.purchase || (user.purchase.length == 0)) {
+                bot.reply(message, '購入物リストに何も入っていません');
             } else {
-                bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
+                var list = [];
+                list = user.purchase;
+                var str = list.join('\n');
+                var p;
+                if ((p = list.indexOf(thing)) >= 0) {
+                    console.log(p);
+                    list.splice(p, 1);
+                    console.log(list);
+                    user.purchase = list;
+                    controller.storage.teams.save(user, function(err, id) {
+                        bot.reply(message, thing + ' を購入物リストから削除しました');
+                    });
+                } else {
+                    bot.reply(message, thing + ' は購入物リストに入っていません\n購入物リストには以下のものがあります\n' + str);
+                }
             }
         }
-      }
     });
 });
 
-<<<<<<< HEAD
 //試作(欲しいものリスト)
 //controller.hears(['(.*)が欲しい', '(.*)がほしい'], 'direct_message,direct_mention,mention', function(bot, message) {
 //  var thing = message.match[1];
@@ -495,114 +492,73 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
 //(論文検索)
 controller.hears(['(.*)の論文(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     var thing = message.match[1];
-    var count = parseInt(message.match[2], 10);
-    var request = require('sync-request');
-    var DOMParser = require('xmldom').DOMParser;
-
-    if (isNaN(count)) {//個数指定があるかどうかの判定
-        size = 3;
+    if (thing == null || thing == '') {
+        bot.reply(message, '調べる論文のジャンルが入力されていません');
     } else {
-        size = count;
-    }
+        var count = parseInt(message.match[2], 10);
+        var request = require('sync-request');
+        var DOMParser = require('xmldom').DOMParser;
 
-    if (isAlphabetNumeric(thing) == true) {
-        var url = "http://export.arxiv.org/api/query?search_query=all:%22" + thing + "%22&start=0&max_results=" + String(size) + "&sortBy=submittedDate&sortOrder=descending";
-        console.log(url);
-        var res = request('GET', url);
+        if (isNaN(count)) { //個数指定があるかどうかの判定
+            size = 3;
+        } else {
+            size = count;
+        }
 
-        if (res.statusCode == 200) {
-            body = res.getBody('utf-8')
-            var parser = new DOMParser();
-            xmlDoc = parser.parseFromString(body, 'text/xml');
-            var p = new Promise(function(res) {
-                res();
-            });
-            for (var i = 0; i < size; i++) {
-                try {
-                    var arxiv_id = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('id')[0].textContent;
-                    var title = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('title')[0].textContent;
-                    var published = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('published')[0].textContent;
-                    var summary = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('summary')[0].textContent;
-                    var url = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('link')[0].textContent;
-                } catch (e) {
-                    continue;
+        if (isAlphabetNumeric(thing) == true) {
+            var url = "http://export.arxiv.org/api/query?search_query=all:%22" + thing + "%22&start=0&max_results=" + String(size) + "&sortBy=submittedDate&sortOrder=descending";
+            console.log(url);
+            var res = request('GET', url);
+
+            if (res.statusCode == 200) {
+                body = res.getBody('utf-8')
+                var parser = new DOMParser();
+                xmlDoc = parser.parseFromString(body, 'text/xml');
+                var p = new Promise(function(res) {
+                    res();
+                });
+                for (var i = 0; i < size; i++) {
+                    try {
+                        var arxiv_id = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('id')[0].textContent;
+                        var title = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('title')[0].textContent;
+                        var published = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('published')[0].textContent;
+                        var summary = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('summary')[0].textContent;
+                        var url = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('link')[0].textContent;
+                    } catch (e) {
+                        continue;
+                    }
+                    bot.reply(message, "こんな論文が見つかりました!!\n\"" + title + "\"\n" + arxiv_id);
+                    console.log(title + "\n" + arxiv_id);
+                    //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
                 }
-                bot.reply(message, "こんな論文が見つかりました!!\n\"" + title + "\"\n" + arxiv_id);
-                console.log(title + "\n" + arxiv_id);
-                //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
+            }
+        } else {
+            var url = "http://ci.nii.ac.jp/opensearch/search?q=" + encodeURIComponent(thing) + "&count=" + String(size) + "&format=atom";
+            console.log(url);
+            var res = request('GET', url);
+
+            if (res.statusCode == 200) {
+                body = res.getBody('utf-8')
+                var parser = new DOMParser();
+                xmlDoc = parser.parseFromString(body, 'text/xml');
+                var p = new Promise(function(res) {
+                    res();
+                });
+                for (var i = 0; i < size; i++) {
+                    try {
+                        var arxiv_id = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('id')[0].textContent;
+                        var title = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('title')[0].textContent;
+                        var published = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('prism:publicationDate')[0].textContent;
+                    } catch (e) {
+                        continue;
+                    }
+                    bot.reply(message, "こんな論文が見つかりました!!\n\"" + title + "\"\n" + arxiv_id);
+                    console.log(title + "\n" + arxiv_id);
+                    //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
+                }
             }
         }
-    } else {
-        var url = "http://ci.nii.ac.jp/opensearch/search?q=" + encodeURIComponent(thing) + "&count=" + String(size) + "&format=atom";
-        console.log(url);
-        var res = request('GET', url);
-
-        if (res.statusCode == 200) {
-            body = res.getBody('utf-8')
-            var parser = new DOMParser();
-            xmlDoc = parser.parseFromString(body, 'text/xml');
-            var p = new Promise(function(res) {
-                res();
-            });
-            for (var i = 0; i < size; i++) {
-                try {
-                    var arxiv_id = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('id')[0].textContent;
-                    var title = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('title')[0].textContent;
-                    var published = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('prism:publicationDate')[0].textContent;
-                } catch (e) {
-                    continue;
-                }
-                bot.reply(message, "こんな論文が見つかりました!!\n\"" + title + "\"\n" + arxiv_id);
-                console.log(title + "\n" + arxiv_id);
-                //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
-            }
-        }
     }
-=======
-
-
-//(論文検索)
-controller.hears(['(.*)の論文(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
-  var thing = message.match[1];
-  if(thing==null||thing==''){
-          bot.reply(message,'調べる論文のジャンルが入力されていません');
-        }
-  else{
-  var request = require('sync-request');
-  var DOMParser = require('xmldom').DOMParser;
-
-  size=3;
-  //query(thing) = 'Deep%20Learning'  //Deep%20Learningを変えると検索するもの(thing)も変わる
-  var url = "http://export.arxiv.org/api/query?search_query=all:%22"+thing+"%22&start=0&max_results=" + String(size)+"&sortBy=submittedDate&sortOrder=descending";
-  console.log(url);
-  var res = request('GET',url);
-
-// for (var i=0; i<size; i++){
-// //表示(リンク)
-// }
-
-if (res.statusCode == 200){
-    body = res.getBody('utf-8')
-    var parser = new DOMParser();
-    xmlDoc = parser.parseFromString(body,'text/xml');
-    var p = new Promise(function(res) { res(); });
-    for (var i=0; i<size; i++){
-        try{
-            var arxiv_id = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('id')[0].textContent;
-            var title = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('title')[0].textContent;
-            var published = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('published')[0].textContent;
-            var summary = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('summary')[0].textContent;
-            var url = xmlDoc.getElementsByTagName('feed')[0].getElementsByTagName('entry')[i].getElementsByTagName('link')[0].textContent;
-        }catch(e){
-            continue;
-        }
-        bot.reply(message,"こんな論文が見つかりました!!\n\""+title+"\"\n"+arxiv_id);
-        console.log(title+"\n"+arxiv_id);
-        //p = p.then(makePromiseFunc2InsertPaper(arxiv_id, title, published, summary, xmlDoc, i));
-    }
-}
-}
->>>>>>> af4f1e7f3a51db378781e01dc735a6ec384a2b58
 });
 //試作
 
