@@ -588,11 +588,14 @@ controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,men
           }
 
         else{
-          search_array1=new Array("しないで","ないで","なくて","くて","ています","んです","でしょう","でも","ましょう","なきゃ","やっぱり","全然","じゃありません","じゃな",);
-          trans_array1=new Array("せず","ず","なく","く","ている","のだ","だろう","しかし","よう","なければ","やはり","全く","ではありません","ではな");　　　
+          search_array1=new Array("とても","すごく","だいたい","けれど","どうやっても","どうしても","と思う","かもしれない","と感じる","を知りたい");
+          trans_array1=new Array("非常に","極めて","おおよそ","しかし","いかなる手段を用いても","いかなる手段を用いても","と考えられる","の可能性がある","と推測される","を理解する必要がある");
 
-          search_array2=new Array("ていません","けど","だから","どうして","なんで","どんな","どっち","だけど","ですから","とか","いろんな","みたい");
-          trans_array2=new Array("ていない","が","従って","なぜ","なぜ","どのような","どちら","だが","そのため","や","様々な","のよう");　　　
+          search_array2=new Array("しないで","ないで","なくて","くて","ています","んです","でしょう","でも","ましょう","なきゃ","やっぱり","全然","じゃありません","じゃな",);
+          trans_array2=new Array("せず","ず","なく","く","ている","のだ","だろう","しかし","よう","なければ","やはり","全く","ではありません","ではな");　　　
+
+          search_array3=new Array("ていません","けど","だから","どうして","なんで","どんな","どっち","だけど","ですから","とか","いろんな","みたい","いっぱい","がわからない");
+          trans_array3=new Array("ていない","が","従って","なぜ","なぜ","どのような","どちら","だが","そのため","や","様々な","のよう","多く","についてより深く理解する必要がある");　　　
 
 
 
@@ -603,10 +606,10 @@ controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,men
           //console.log(trans_str);
           for(loopnum=0;loopnum<search_array1.length;loopnum++){
             search_check=trans_str.indexOf(search_array1[loopnum]);
-            console.log(search_check);
+            //console.log(search_check);
             while(search_check!=-1){
             trans_str=trans_str.replace(search_array1[loopnum],trans_array1[loopnum]);
-            console.log(trans_str);
+            //console.log(trans_str);
             search_check=-1;
             //search_check=trans_str.indexOf(search_array[loopnum]);
               }
@@ -616,10 +619,23 @@ controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,men
 
           for(loopnum=0;loopnum<search_array2.length;loopnum++){
             search_check=trans_str.indexOf(search_array2[loopnum]);
-            console.log(search_check);
+            //console.log(search_check);
             while(search_check!=-1){
             trans_str=trans_str.replace(search_array2[loopnum],trans_array2[loopnum]);
-            console.log(trans_str);
+            //console.log(trans_str);
+            search_check=-1;
+            //search_check=trans_str.indexOf(search_array[loopnum]);
+              }
+          }
+
+          loopnum=0;
+
+          for(loopnum=0;loopnum<search_array3.length;loopnum++){
+            search_check=trans_str.indexOf(search_array3[loopnum]);
+            //console.log(search_check);
+            while(search_check!=-1){
+            trans_str=trans_str.replace(search_array3[loopnum],trans_array3[loopnum]);
+            //console.log(trans_str);
             search_check=-1;
             //search_check=trans_str.indexOf(search_array[loopnum]);
               }
@@ -630,8 +646,19 @@ controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,men
         }
 });
 
+/**
+ * チェック対象文字列が半角英数字のみかチェックします。
+ *
+  //param searchValue
+  //param transValue
 
-
+ function transstring(searchvalue,transvalue) {
+     if (argValue.match(/[^A-Z|^a-z|^0-9]/g)) {
+         return false;
+     } else {
+         return true;
+     }
+ }*/
 
 
 controller.hears(['(.*)鍵(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
