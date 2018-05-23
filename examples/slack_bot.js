@@ -85,6 +85,7 @@ var board = new five.Board();
 
 var button;
 var is_open = false;
+var is_light = false;
 
 // board.on("ready", function() {
 //     // スイッチの設定
@@ -118,18 +119,30 @@ var is_open = false;
 //     });
 // });
 
-// board.on('ready', () => {
-//     const s = new five.Sensor('A2');
-//
-//     s.on('change', v => {
-//         console.log(v);
-//         if (v > 512) {
-//             is_open = false;
-//         } else {
-//             is_open = true;
-//         }
-//     });
-// })
+board.on('ready', () => {
+    const s = new five.Sensor('A2');
+    const l = new five.Sensor('A0');
+
+    s.on('change', v => {
+        if (v > 100) {
+          console.log("key close " + v);
+            is_open = false;
+        } else {
+          console.log("key = open " + v);
+            is_open = true;
+        }
+    });
+
+    l.on('change', v => {
+        if (v < 100) {
+            console.log("light off " + v);
+            is_light = false;
+        } else {
+            console.log("light on " + v);
+            is_light = true;
+        }
+    });
+})
 
 ////////////////////////////////////////////
 
@@ -578,17 +591,25 @@ function isAlphabetNumeric(argValue) {
 }
 
 
-controller.hears(['(.*)鍵(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['(.*)鍵(.*)', '(.*)電気(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     if (is_open) {
-        bot.reply(message, "あいてるよ！！誰がいるのかな(ﾜｸﾜｸ");
+        if (is_light) {
+            bot.reply(message, "鍵は開いていて電気もついています．\n誰かいるのでしょうか");
+        } else {
+            bot.reply(message, "鍵は開いてますが電気はついていません．\n鍵の閉め忘れでなければいいのですが…");
+        }
     } else {
-        bot.reply(message, "しまってるよ( ;∀;)");
+        if (is_light) {
+            bot.reply(message, "鍵は閉まっていますが電気はついています．\n電気の消し忘れでなければいいのですが…");
+        } else {
+            bot.reply(message, "鍵は閉まっていて電気も消えています．");
+        }
     }
 
 });
 
 controller.hears(['ヘルプ', '機能', '使い方'], 'direct_message,direct_mention,mention', function(bot, message) {
-    bot.reply(message, "「鍵」：研究室の鍵が開いているかを答えます\n" +
+    bot.reply(message, "「鍵」：研究室の鍵が開いているか，電気がついているかを答えます\n" +
         "「～が無くなった」,「～が切れた」：購入物リストに～を追加します\n" +
         "「～を買った」：購入物リストから～を削除します\n" +
         "「全部買った」：購入物リストを空にします\n" +
