@@ -320,7 +320,7 @@ function formatUptime(uptime) {
     return uptime;
 }
 
-controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が切れた', '(.*)を買う'], 'direct_message,direct_mention,mention', function(bot, message) {
+controller.hears(['(.*)が無くなった', '(.*)がなくなった', '(.*)が切れた', '(.*)を買う', '(.*)が欲しい', '(.*)がほしい'], 'direct_message,direct_mention,mention', function(bot, message) {
     var thing = message.match[1];
     controller.storage.teams.get(message.team, function(err, user) {
         if (!user) {
@@ -430,78 +430,6 @@ controller.hears(['(.*)を買った'], 'direct_message,direct_mention,mention', 
     });
 });
 
-//試作(欲しいものリスト)
-//controller.hears(['(.*)が欲しい', '(.*)がほしい'], 'direct_message,direct_mention,mention', function(bot, message) {
-//  var thing = message.match[1];
-//      controller.storage.users.get(message.user, function(err, user) {
-//          if (!user) {
-//              user = {
-//                  id: message.user,
-//              };
-//          }
-//
-//          if (!user.purchase) {
-//            var admitlist = [];
-//            admitlist.push(thing);
-//             user.purchase = admitlist;
-//             console.log(admitlist);
-//             controller.storage.users.save(user, function(err, id) {
-//                 bot.reply(message, thing + ' を購入候補リストに追加しました');
-//             });
-//           }else{
-//             oldlist = user.purchase;
-//             if(oldlist.indexOf(thing) < 0){
-//               oldlist.push(thing);
-//               console.log(oldlist);
-//               user.purchase = oldlist;
-//               controller.storage.users.save(user, function(err, id) {
-//                   bot.reply(message, thing + ' を購入候補リストに追加しました');
-//               });
-//             }else{
-//               bot.reply(message, thing + ' はすでに購入候補リストに入っています');
-//             }
-//           }
-//          }
-//   });
-//  });
-
-
-//(先生からのOK待ち)
-//(注文や購入)
-//controller.hears(['(.*)を注文する', '(.*)を頼む'], 'direct_message,direct_mention,mention', function(bot, message) {
-//  var thing = message.match[1];
-//      controller.storage.users.get(message.user, function(err, user) {
-//          if (!user) {
-//              user = {
-//                  id: message.user,
-//              };
-//          }
-//
-//          if (!user.purchase) {
-//            var purchaselist = [];
-//            admitlist.push(thing);
-//             user.purchase = purchaselist;
-//             console.log(purchaselist);
-//             controller.storage.users.save(user, function(err, id) {
-//                 bot.reply(message, thing + ' を注文リストに追加しました');
-//             });
-//           }else{
-//             oldlist = user.purchase;
-//             if(oldlist.indexOf(thing) < 0){
-//               oldlist.push(thing);
-//               console.log(oldlist);
-//               user.purchase = oldlist;
-//               controller.storage.users.save(user, function(err, id) {
-//                   bot.reply(message, thing + ' を注文リストに追加しました');
-//               });
-//             }else{
-//               bot.reply(message, thing + ' はすでに注文リストに入っています');
-//             }
-//           }
-//          }
-//   });
-//  });
-
 //(論文検索)
 controller.hears(['(.*)の論文(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
     var thing = message.match[1];
@@ -573,7 +501,6 @@ controller.hears(['(.*)の論文(.*)'], 'direct_message,direct_mention,mention',
         }
     }
 });
-//試作
 
 /**
  * チェック対象文字列が半角英数字のみかチェックします。
@@ -589,76 +516,6 @@ function isAlphabetNumeric(argValue) {
         return true;
     }
 }
-
-//試作
-
-//書き言葉変換(ですます体→だである体)
-/*controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
-  var thing = message.match[1];
-  if(thing==null||thing==''){
-            bot.reply(message,'変換する文章が入力されていません');
-          }
-
-        else{
-          search_array1=new Array("とても","すごく","だいたい","けれど","どうやっても","どうしても","と思う","かもしれない","と感じる","を知りたい");
-          trans_array1=new Array("非常に","極めて","おおよそ","しかし","いかなる手段を用いても","いかなる手段を用いても","と考えられる","の可能性がある","と推測される","を理解する必要がある");
-
-          search_array2=new Array("しないで","ないで","なくて","くて","ています","んです","でしょう","でも","ましょう","なきゃ","やっぱり","全然","じゃありません","じゃな",);
-          trans_array2=new Array("せず","ず","なく","く","ている","のだ","だろう","しかし","よう","なければ","やはり","全く","ではありません","ではな");　　　
-
-          search_array3=new Array("ていません","けど","だから","どうして","なんで","どんな","どっち","だけど","ですから","とか","いろんな","みたい","いっぱい","がわからない");
-          trans_array3=new Array("ていない","が","従って","なぜ","なぜ","どのような","どちら","だが","そのため","や","様々な","のよう","多く","についてより深く理解する必要がある");　　　
-
-
-
-          var trans_str=thing;
-          var search_check=0;
-          var loopnum=0;
-          //console.log(thing);
-          //console.log(trans_str);
-          for(loopnum=0;loopnum<search_array1.length;loopnum++){
-            search_check=trans_str.indexOf(search_array1[loopnum]);
-            console.log(search_check);
-            while(search_check!=-1){
-            trans_str=trans_str.replace(search_array1[loopnum],trans_array1[loopnum]);
-            console.log(trans_str);
-            search_check=-1;
-            //search_check=trans_str.indexOf(search_array[loopnum]);
-              }
-          }
-
-          loopnum=0;
-
-          for(loopnum=0;loopnum<search_array2.length;loopnum++){
-            search_check=trans_str.indexOf(search_array2[loopnum]);
-            //console.log(search_check);
-            while(search_check!=-1){
-            trans_str=trans_str.replace(search_array2[loopnum],trans_array2[loopnum]);
-            //console.log(trans_str);
-            search_check=-1;
-            //search_check=trans_str.indexOf(search_array[loopnum]);
-              }
-          }
-
-          loopnum=0;
-
-          for(loopnum=0;loopnum<search_array3.length;loopnum++){
-            search_check=trans_str.indexOf(search_array3[loopnum]);
-            //console.log(search_check);
-            while(search_check!=-1){
-            trans_str=trans_str.replace(search_array3[loopnum],trans_array3[loopnum]);
-            //console.log(trans_str);
-            search_check=-1;
-            //search_check=trans_str.indexOf(search_array[loopnum]);
-              }
-          }
-
-          console.log(trans_str);
-          bot.reply(message,trans_str);
-        }
-});*/
-
-
 
 //書き言葉変換(ですます体→だである体)
 controller.hears(['書き言葉変換:(.*)'], 'direct_message,direct_mention,mention', function(bot, message) {
@@ -768,38 +625,3 @@ controller.hears('', 'direct_message,direct_mention,mention', function(bot, mess
     //convo.next();
     //  });
 });
-
-// controller.hears('しりとり(.*)', 'direct_message,direct_mention,mention', function(bot, message) {
-//
-//   var options = {
-//       url: 'https://api.apigw.smt.docomo.ne.jp/dialogue/v1/dialogue?APIKEY=' + process.env.apikey,
-//       json: {
-//           utt: message.text,
-//           place: place,
-//
-//           // 以下2行はしりとり以外の会話はコメントアウトいいかも
-//           // 会話を継続しているかの情報
-//           context: context,
-//           mode: mode
-//       }
-//   }
-//   request.post(options, function (error, response, body) {
-//       context = body.context;
-//       mode = body.mode;
-//       bot.reply(message, body.utt);
-//   })
-//
-//    bot.startConversation(message, function(err, convo) {
-//         convo.ask('答えをどうぞ',
-//         function(response,convo){
-//             //リクエスト送信
-//             request.post(options, function (error, response, body) {
-//                 context = body.context;
-//                 //mode = 'srtr';
-//                 convo.say(body.utt);
-//                 convo.next();
-//                   //bot.reply(message, body.utt);
-//             });
-//           });
-//       });
-// });
